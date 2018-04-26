@@ -8,6 +8,8 @@ public class EnemyStatus : MonoBehaviour {
     public int power;
     public string name;
 
+    bool isDie = false;
+
     Transform life;
     Animator animator;
     NavMeshAgent agent;
@@ -28,13 +30,15 @@ public class EnemyStatus : MonoBehaviour {
         HP -= damage;
         if(HP<=0){
             //死亡
+            if (isDie == true) return;
+            isDie = true;
             agent.SetDestination(transform.position);
             animator.SetBool("die", true);
             StartCoroutine("Des");
         }
     }
     IEnumerator Des(){
-        yield return new WaitForSeconds(6.0f);
+        yield return new WaitForSeconds(8.0f);
         Destroy(gameObject);
     }
 }

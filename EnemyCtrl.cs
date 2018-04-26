@@ -80,13 +80,17 @@ public class EnemyCtrl : MonoBehaviour {
     {
         Debug.Log("chase");
         animator.SetBool("Idle", false);
+
+        //攻撃が当たってないならplayerを追い続ける
         if (!enemyaAttackArea.isHit)
         {
+            //突進開始
             enemyaAttackArea.OnAttack();
             agent.SetDestination(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
             transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
         }
         else if (!key){
+            //攻撃が当たったらそのまま走る
             //enemyaAttackArea.OnAttackTermination();
             agent.SetDestination(transform.position+transform.forward*30+transform.right*5);
             transform.LookAt(transform.position + transform.forward * 30+ transform.right * 5);
@@ -111,18 +115,17 @@ public class EnemyCtrl : MonoBehaviour {
     {
         //Debug.Log("startIdleAnim");
         isIdle = true;
-        animator.SetBool("Idle", false);
     }
 
     public void EndIdleAnim(){
         //Debug.Log("endIdleAnim");
         isIdle = false;
-        //nextState = State.walk;
+        animator.SetBool("Idle", false);
+        nextState = State.walk;
     }
 
     public void StartRun(){
         agent.speed = 7;
-
     }
     public void EndRun()
     {
@@ -135,7 +138,7 @@ public class EnemyCtrl : MonoBehaviour {
         if(other.gameObject.layer==LayerMask.NameToLayer("Player") && !isChase){
             Debug.Log("Found Player!");
             isChase = true;
-            state = State.chase;
+            //state = State.chase;
             nextState = State.chase;
             animator.SetBool("chase", true);
             animator.SetBool("Attacking", true);

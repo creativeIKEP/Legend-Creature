@@ -20,7 +20,7 @@ public class WarpParticleCtrl : MonoBehaviour {
         if(other.gameObject.layer==LayerMask.NameToLayer("Player")){
             //isActive = !isActive;
             warpParticle.SetActive(true);
-            Debug.Log("aaa");
+            Debug.Log("Warp apper");
         }
 	}
 	private void OnTriggerExit(Collider other)
@@ -29,7 +29,7 @@ public class WarpParticleCtrl : MonoBehaviour {
         {
             //isActive = !isActive;
             warpParticle.SetActive(false);
-            Debug.Log("bbb");
+            Debug.Log("Warp disapper");
         }
 	}
 }
