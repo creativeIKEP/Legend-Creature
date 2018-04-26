@@ -49,38 +49,38 @@ public class SmartPhoneUICtrl : MonoBehaviour {
     }
 
 
-    public void ForwardButton(){
-        playerMove.ForwardMove();
-    }
-    public void BackButton()
-    {
-        playerMove.BackMove();
-    }
-    public void LeftButton()
-    {
-        playerMove.LeftMove();
-    }
-    public void RightButton()
-    {
-        playerMove.RightMove();
-    }
+    //public void ForwardButton(){
+    //    playerMove.ForwardMove();
+    //}
+    //public void BackButton()
+    //{
+    //    playerMove.BackMove();
+    //}
+    //public void LeftButton()
+    //{
+    //    playerMove.LeftMove();
+    //}
+    //public void RightButton()
+    //{
+    //    playerMove.RightMove();
+    //}
 
-    public void ForwardButtonUp()
-    {
-        playerMove.ForwardMoveStop();
-    }
-    public void BackButtonUp()
-    {
-        playerMove.BackMoveStop();
-    }
-    public void LeftButtonUp()
-    {
-        playerMove.LeftMoveStop();
-    }
-    public void RightButtonUp()
-    {
-        playerMove.RightMoveStop();
-    }
+    //public void ForwardButtonUp()
+    //{
+    //    playerMove.ForwardMoveStop();
+    //}
+    //public void BackButtonUp()
+    //{
+    //    playerMove.BackMoveStop();
+    //}
+    //public void LeftButtonUp()
+    //{
+    //    playerMove.LeftMoveStop();
+    //}
+    //public void RightButtonUp()
+    //{
+    //    playerMove.RightMoveStop();
+    //}
     public void DashButton(){
         playerMove.DushMove();
     }

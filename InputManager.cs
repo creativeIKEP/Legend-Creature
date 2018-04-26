@@ -19,16 +19,16 @@ public class InputManager : MonoBehaviour {
 	}
 
 	void Update()
-	{
-        
+    {
         // スライド開始地点.
-        if (Input.GetMouseButtonDown(0))
-			slideStartPosition = GetCursorPosition();
+        if (Input.GetMouseButtonDown(0)){
+            slideStartPosition = GetCursorPosition();
+        }
         
 		
 		// 画面の１割以上移動させたらスライド開始と判断する.
         if (Input.GetMouseButton(0)) {
-			if (Vector2.Distance(slideStartPosition,GetCursorPosition()) >= (Screen.width * 0.1f))
+            if (Vector2.Distance(slideStartPosition,GetCursorPosition()) >= (Screen.width * 0.1f))
 				moved = true;
 		}
 		

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityStandardAssets.CrossPlatformInput;
 
 public class PlayerMove : MonoBehaviour {
     public Terrain terrain;
@@ -24,6 +25,7 @@ public class PlayerMove : MonoBehaviour {
     Vector3 direction = Vector3.zero;
 
 
+    bool joyStick = false;
     bool forward = false;
     bool back = false;
     bool left = false;
@@ -69,6 +71,18 @@ public class PlayerMove : MonoBehaviour {
             float yAngle = m_Cam.transform.rotation.eulerAngles.y;
             m_Cam.rotation = Quaternion.Euler(0, yAngle, 0);
 
+            float h = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+            float v = CrossPlatformInputManager.GetAxisRaw("Vertical");
+            if (h != 0.0f || v != 0.0f)
+            {
+                direction = m_Cam.forward.normalized * v + m_Cam.right.normalized * h;
+                anim.SetFloat("Forward", 0.5f);
+                joyStick = true;
+            }
+            else { 
+                joyStick = false;
+                anim.SetFloat("Forward", 0);
+            }
 
             if(forward){
                 direction += m_Cam.forward.normalized;
@@ -91,7 +105,7 @@ public class PlayerMove : MonoBehaviour {
             if (dush)
             {
                 walkSpeed = walkSpeedDiff*2;
-                if (forward || back || right || left) { anim.SetFloat("Forward", 1.0f); }
+                if (forward || back || right || left || joyStick) { anim.SetFloat("Forward", 1.0f); }
             }
             else { walkSpeed = walkSpeedDiff; }
 
