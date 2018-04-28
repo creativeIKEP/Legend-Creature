@@ -18,6 +18,7 @@ public class PlayerStatus : MonoBehaviour {
 
     UICtrl uICtrl;
     Animator animator;
+    EnemyaAttackArea enemyaAttackArea;
 
     public void SetWalkState() { state = State.walk; }
     public void SetAttackState() { state = State.attack; }
@@ -27,6 +28,7 @@ public class PlayerStatus : MonoBehaviour {
 	void Start () {
         uICtrl = FindObjectOfType<UICtrl>();
         animator = GetComponent<Animator>();
+        enemyaAttackArea = FindObjectOfType<EnemyaAttackArea>();
 	}
 	
 	// Update is called once per frame

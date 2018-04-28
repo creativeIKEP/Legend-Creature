@@ -37,11 +37,12 @@ public class PlayerMove : MonoBehaviour {
 
     Animator anim;
     PlayerStatus playerStatus;
-   
+    EnemyaAttackArea enemyaAttackArea;
+    PlayerAttackArea playerAttackArea;
 
     
     // 移動速度.
-    public float walkSpeed = 6.0f;
+    public float walkSpeed = 7.0f;
     public float walkSpeedDiff;
     float walkSpeedCash;
     
@@ -56,6 +57,8 @@ public class PlayerMove : MonoBehaviour {
         walkSpeedCash = walkSpeedDiff;
         anim = GetComponent<Animator>();
         playerStatus = GetComponent<PlayerStatus>();
+        enemyaAttackArea = FindObjectOfType<EnemyaAttackArea>();
+        playerAttackArea = GetComponentInChildren<PlayerAttackArea>();
     }
 
     // Update is called once per frame
@@ -216,6 +219,8 @@ public class PlayerMove : MonoBehaviour {
     }
     public void MoveReStart(){
         walkSpeedDiff = walkSpeedCash;
+        enemyaAttackArea.hitEffect.SetActive(false);
+        playerAttackArea.hitParticle.SetActive(false);
     }
 
 

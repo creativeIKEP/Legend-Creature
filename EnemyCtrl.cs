@@ -12,8 +12,10 @@ public class EnemyCtrl : MonoBehaviour {
 
     EnemyaAttackArea enemyaAttackArea;
     bool isIdle;
-    bool isChase = false;
-    bool key = false;
+    bool isAttack = false;
+    bool AttackPosition = false;
+    bool chaseKey = false;
+    bool attackKey = false;
 
     enum State{
         idle,
@@ -89,28 +91,62 @@ public class EnemyCtrl : MonoBehaviour {
             agent.SetDestination(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
             transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
         }
-        else if (!key){
+        else if (!chaseKey){
             //攻撃が当たったらそのまま走る
             //enemyaAttackArea.OnAttackTermination();
             agent.SetDestination(transform.position+transform.forward*30+transform.right*5);
             transform.LookAt(transform.position + transform.forward * 30+ transform.right * 5);
-            key = !key;
+            chaseKey = !chaseKey;
         }
         else{
             if(Vector3.Distance(transform.position, agent.destination)<=0.6f){
-                key = false;
+                chaseKey = false;
                 enemyaAttackArea.isHit = false;
+                int j = Random.Range(0, 2);
+                if(j==0){nextState = State.chase;}
+                else{ nextState = State.attack; }
             }
         }
     }
+
     void Attack(){
-        
+        Debug.Log("Attack");
+        if(!AttackPosition){
+            agent.SetDestination(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
+            transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
+            if (Vector3.Distance(transform.position, agent.destination) <= 10.0f)
+            {
+                AttackPosition = true;
+            }
+        }
+        else if(!attackKey){
+            agent.isStopped = true;
+            animator.SetBool("attack", true);
+            moveTarget.position = transform.position + transform.forward * 30 + transform.right * 5;
+        }
+        else{
+            if (Vector3.Distance(transform.position, agent.destination) <= 0.6f)
+            {
+                AttackPosition = false;
+                attackKey = false;
+                int j = Random.Range(0, 2);
+                if (j == 0) { nextState = State.chase; }
+                else { nextState = State.attack; }
+            }
+            else{
+                agent.isStopped = false;
+                agent.SetDestination(moveTarget.position);
+                transform.LookAt(moveTarget.position);
+            }
+        }
     }
 
     void Die(){
         
     }
 
+
+    //以下、イベント関数
     public void StartIdleAnim()
     {
         //Debug.Log("startIdleAnim");
@@ -133,15 +169,41 @@ public class EnemyCtrl : MonoBehaviour {
         enemyaAttackArea.hitEffect.SetActive(false);
     }
 
+    public void StartAttack(){
+        enemyaAttackArea.OnAttack();
+    }
+    public void EndAttack()
+    {
+        enemyaAttackArea.OnAttackTermination();
+        enemyaAttackArea.hitEffect.SetActive(false);
+    }
+    public void EndAttack2(){
+        attackKey = true;
+        agent.SetDestination(transform.position + transform.forward * 30 + transform.right * 5);
+        transform.LookAt(transform.position + transform.forward * 30 + transform.right * 5);
+        animator.SetBool("attack", false);
+    }
+
 	private void OnTriggerEnter(Collider other)  //Playerを探す
 	{
-        if(other.gameObject.layer==LayerMask.NameToLayer("Player") && !isChase){
+        if(other.gameObject.layer==LayerMask.NameToLayer("Player") && !isAttack){
             Debug.Log("Found Player!");
-            isChase = true;
-            //state = State.chase;
+            isAttack = true;
             nextState = State.chase;
             animator.SetBool("chase", true);
             animator.SetBool("Attacking", true);
         }
 	}
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Player") && isAttack)
+        {
+            Debug.Log("Lost Player!");
+            isAttack = false;
+            nextState = State.walk;
+            animator.SetBool("chase", false);
+            animator.SetBool("Attacking", false);
+            moveTarget = bossPoint;
+        }
+    }
 }
