@@ -66,7 +66,7 @@ public class EnemyCtrl : MonoBehaviour {
         Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
         //Vector3 moveTargetPos = new Vector3(moveTarget.position.x, 0, moveTarget.position.z);
         //Debug.Log(Vector3.Distance(moveTarget.position, enemyPos));
-        if(Vector3.Distance(moveTarget.position, enemyPos)<=0.6f){
+        if(Vector3.Distance(moveTarget.position, enemyPos)<=1.0f){
             moveTarget.position = new Vector3(Random.Range(transform.position.x-10.0f, transform.position.x+10.0f), 0, Random.Range(transform.position.z-10.0f, transform.position.z+10.0f));
             nextState = State.idle;
             animator.SetBool("Idle", true);
@@ -83,31 +83,45 @@ public class EnemyCtrl : MonoBehaviour {
 
     void Chase()
     {
-        Debug.Log("chase");
+        //Debug.Log("chase");
         animator.SetBool("Idle", false);
 
         //攻撃が当たってないならplayerを追い続ける
-        if (!enemyaAttackArea.isHit)
+        if (!chaseKey && Vector3.Distance(transform.position, new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z)) > 10.0f)
         {
+            Debug.Log("chase1");
             //突進開始
             enemyaAttackArea.OnAttack();
+            //moveTarget.position = new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z);
             agent.SetDestination(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
             transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
         }
         else if (!chaseKey){
+            Debug.Log("chase2");
             //攻撃が当たったらそのまま走る
             //enemyaAttackArea.OnAttackTermination();
-            agent.SetDestination(transform.position+transform.forward*30+transform.right*5);
-            transform.LookAt(transform.position + transform.forward * 30+ transform.right * 5);
+            moveTarget.position = transform.position + transform.forward * 30 + transform.right * 5;
+            agent.SetDestination(moveTarget.position);
+            transform.LookAt(moveTarget.position);
             chaseKey = !chaseKey;
         }
         else{
-            if(Vector3.Distance(transform.position, agent.destination)<=0.6f){
+            Vector3 destination = new Vector3(agent.destination.x, transform.position.y, agent.destination.z);
+            if(Vector3.Distance(transform.position, destination)<=1.0f){
+                Debug.Log("chase3");
                 chaseKey = false;
                 enemyaAttackArea.isHit = false;
                 int j = Random.Range(0, 2);
                 if(j==0){nextState = State.chase;}
                 else{ nextState = State.attack; }
+            }
+            else
+            {
+                Debug.Log("chase4");
+                agent.SetDestination(moveTarget.position);
+                transform.LookAt(moveTarget.position);
+                if (!enemyaAttackArea.isHit) enemyaAttackArea.OnAttack();
+                else { enemyaAttackArea.OnAttackTermination(); }
             }
         }
     }
@@ -117,7 +131,8 @@ public class EnemyCtrl : MonoBehaviour {
         if(!AttackPosition){    //playerと距離があるなら近づく
             agent.SetDestination(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
             transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
-            if (Vector3.Distance(transform.position, agent.destination) <= 10.0f)   //playerの近くにきたら
+            Vector3 destination = new Vector3(agent.destination.x, transform.position.y, agent.destination.z);
+            if (Vector3.Distance(transform.position, destination) <= 10.0f)   //playerの近くにきたら
             {
                 AttackPosition = true;
             }
@@ -128,7 +143,8 @@ public class EnemyCtrl : MonoBehaviour {
             moveTarget.position = transform.position + transform.forward * 30 + transform.right * 5;
         }
         else{
-            if (Vector3.Distance(transform.position, agent.destination) <= 0.6f)
+            Vector3 destination = new Vector3(agent.destination.x, transform.position.y, agent.destination.z);
+            if (Vector3.Distance(transform.position, destination) <= 1.0f)
             {
                 AttackPosition = false;
                 attackKey = false;
@@ -209,6 +225,9 @@ public class EnemyCtrl : MonoBehaviour {
         {
             Debug.Log("Lost Player!");
             isAttack = false;
+            chaseKey = false;
+            AttackPosition = false;
+            attackKey = false;
             nextState = State.walk;
             animator.SetBool("chase", false);
             animator.SetBool("Attacking", false);
