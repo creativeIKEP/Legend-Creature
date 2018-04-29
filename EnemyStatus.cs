@@ -32,6 +32,7 @@ public class EnemyStatus : MonoBehaviour {
             //死亡
             if (isDie == true) return;
             isDie = true;
+            agent.SetDestination(transform.position);
             agent.Stop();
             animator.SetBool("die", true);
             StartCoroutine("Des");

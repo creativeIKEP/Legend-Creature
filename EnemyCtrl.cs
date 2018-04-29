@@ -9,6 +9,9 @@ public class EnemyCtrl : MonoBehaviour {
     Animator animator;
     public Transform bossPoint;
     public GameObject player;
+    public GameObject bossNameUI;
+    public GameObject bossLifeUI_b;
+    public GameObject bossLifeUI_f;
 
     EnemyaAttackArea enemyaAttackArea;
     bool isIdle;
@@ -111,15 +114,15 @@ public class EnemyCtrl : MonoBehaviour {
 
     void Attack(){
         Debug.Log("Attack");
-        if(!AttackPosition){
+        if(!AttackPosition){    //playerと距離があるなら近づく
             agent.SetDestination(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
             transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
-            if (Vector3.Distance(transform.position, agent.destination) <= 10.0f)
+            if (Vector3.Distance(transform.position, agent.destination) <= 10.0f)   //playerの近くにきたら
             {
                 AttackPosition = true;
             }
         }
-        else if(!attackKey){
+        else if(!attackKey){    //攻撃中
             agent.isStopped = true;
             animator.SetBool("attack", true);
             moveTarget.position = transform.position + transform.forward * 30 + transform.right * 5;
@@ -192,6 +195,12 @@ public class EnemyCtrl : MonoBehaviour {
             nextState = State.chase;
             animator.SetBool("chase", true);
             animator.SetBool("Attacking", true);
+
+            if(gameObject.tag=="Boss"){
+                bossNameUI.SetActive(true);
+                bossLifeUI_b.SetActive(true);
+                bossLifeUI_f.SetActive(true);
+            }
         }
 	}
     private void OnTriggerExit(Collider other)
@@ -204,6 +213,13 @@ public class EnemyCtrl : MonoBehaviour {
             animator.SetBool("chase", false);
             animator.SetBool("Attacking", false);
             moveTarget = bossPoint;
+
+            if (gameObject.tag == "Boss")
+            {
+                bossNameUI.SetActive(false);
+                bossLifeUI_b.SetActive(false);
+                bossLifeUI_f.SetActive(false);
+            }
         }
     }
 }

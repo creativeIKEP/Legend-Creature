@@ -10,6 +10,7 @@ public class SmartPhoneUICtrl : MonoBehaviour {
     Vector2 prevPosition;
     Vector2 delta = Vector2.zero;
     bool moved = false;
+    int touchCount = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -49,6 +50,13 @@ public class SmartPhoneUICtrl : MonoBehaviour {
     }
 
 
+    public void JoyStickEnter(){
+        touchCount++;
+    }
+    public void JoyStickExit(){
+        touchCount--;
+    }
+
     //public void ForwardButton(){
     //    playerMove.ForwardMove();
     //}
@@ -83,9 +91,11 @@ public class SmartPhoneUICtrl : MonoBehaviour {
     //}
     public void DashButton(){
         playerMove.DushMove();
+        touchCount++;
     }
     public void DashMoveStop(){
         playerMove.DushMoveStop();
+        touchCount--;
     }
 
     public void AttackButton(){
@@ -94,7 +104,14 @@ public class SmartPhoneUICtrl : MonoBehaviour {
     }
 
     public void ScrollButtonDown(){
-        prevPosition = GetCursorPosition();
+        if (Input.touchCount == touchCount + 2)
+        {
+            
+        }
+        else if (Input.touchCount == touchCount + 1)
+        {
+            prevPosition = GetCursorPosition();
+        }
     }
     public void ScrollButton()
     {
