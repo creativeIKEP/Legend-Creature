@@ -59,8 +59,13 @@ public class PlayerCtrl : MonoBehaviour {
         {
             playerMove.DushMoveStop();
         }
-        //if(Input.GetKeyDown(playerCtrlSetting.jump)){
-        //    playerMove.Jump();
-        //}
+
+        if(Input.GetKeyDown(playerCtrlSetting.jump)){
+            playerMove.Jump();
+        }
+        if (Input.GetKeyUp(playerCtrlSetting.jump))
+        {
+            playerMove.JumpStop();
+        }
 	}
 }

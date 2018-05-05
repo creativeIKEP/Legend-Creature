@@ -20,6 +20,8 @@ public class PlayerStatus : MonoBehaviour {
     Animator animator;
     EnemyaAttackArea enemyaAttackArea;
 
+    CharacterController characterController;
+
     public void SetWalkState() { state = State.walk; }
     public void SetAttackState() { state = State.attack; }
     public void SetSwimState() { state = State.swim; }
@@ -29,19 +31,22 @@ public class PlayerStatus : MonoBehaviour {
         uICtrl = FindObjectOfType<UICtrl>();
         animator = GetComponent<Animator>();
         enemyaAttackArea = FindObjectOfType<EnemyaAttackArea>();
+        characterController = GetComponent<CharacterController>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
+        
 	}
 
-    public void Damage(int damage)
+    public void Damage(int damage, Vector3 atDamage)
     {
         GetComponent<PlayerMove>().MoveStop();
         StartCoroutine("MoveReStart");
         HP -= damage;
         uICtrl.HPChange(HP, MaxHP);
+        characterController.enabled = false;
+        GetComponent<Rigidbody>().AddForceAtPosition((transform.position - atDamage).normalized * 7, atDamage, ForceMode.VelocityChange);
         if (HP <= 0)
         {
             //死亡
@@ -53,7 +58,9 @@ public class PlayerStatus : MonoBehaviour {
     }
 
     IEnumerator MoveReStart(){
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(0.5f);
+        characterController.enabled = true;
+        yield return new WaitForSeconds(2.0f);
         GetComponent<PlayerMove>().MoveReStart();
     }
 }

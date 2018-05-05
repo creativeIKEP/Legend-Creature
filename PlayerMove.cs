@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 
 public class PlayerMove : MonoBehaviour {
-    public Terrain terrain;
 
     // 重力値.
     const float GravityPower = 9.8f; 
@@ -32,7 +31,7 @@ public class PlayerMove : MonoBehaviour {
     bool right = false;
     bool dush = false;
     bool swim = false;
-
+    bool jump = false;
     bool isOnGround = false;
 
     Animator anim;
@@ -48,7 +47,7 @@ public class PlayerMove : MonoBehaviour {
     
     // 回転速度.
     public float rotationSpeed = 360.0f;
-
+    public float jumpPower = 6.0f;
 
     void Start()
     {
@@ -141,12 +140,14 @@ public class PlayerMove : MonoBehaviour {
 
         // 重力.
         velocity += Vector3.down * GravityPower * Time.deltaTime;
+        if (characterController.isGrounded || swim)anim.SetBool("jump", false);
+        if (jump) { velocity += Vector3.up * jumpPower; jump = false; anim.SetBool("jump", true); }
 
         // 接地していたら思いっきり地面に押し付ける.
         // (UnityのCharactorControllerの特性のため）
         Vector3 snapGround = Vector3.zero;
-        if (characterController.isGrounded)
-            snapGround = Vector3.down;
+        //if (characterController.isGrounded)
+            //snapGround = Vector3.down;
 
         // CharacterControllerを使って動かす.
         characterController.Move(velocity * Time.deltaTime + snapGround);
@@ -211,7 +212,11 @@ public class PlayerMove : MonoBehaviour {
 
     public void Jump(){
         Debug.Log("jump");
-        //anim.SetBool("jump", true);
+        if(characterController.isGrounded && !swim)jump = true;
+    }
+    public void JumpStop()
+    {
+        Debug.Log("jump");
     }
 
     public void MoveStop(){
@@ -222,7 +227,6 @@ public class PlayerMove : MonoBehaviour {
         enemyaAttackArea.hitEffect.SetActive(false);
         playerAttackArea.hitParticle.SetActive(false);
     }
-
 
 
     private void OnControllerColliderHit(ControllerColliderHit hit)

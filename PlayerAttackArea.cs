@@ -22,6 +22,7 @@ public class PlayerAttackArea : MonoBehaviour {
         EnemyStatus enemyStatus = other.gameObject.transform.root.GetComponent<EnemyStatus>();
         enemyStatus.Damage(power);
         hitParticle.SetActive(true);
+        GetComponent<Collider>().enabled = false;
 	}
 
     public void OnAttack()

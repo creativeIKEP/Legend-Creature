@@ -7,13 +7,16 @@ public class EnemyCtrl : MonoBehaviour {
     NavMeshAgent agent;
     Transform moveTarget;
     Animator animator;
-    public Transform bossPoint;
-    public GameObject player;
+    public Transform firstPoint;
+
     public GameObject bossNameUI;
     public GameObject bossLifeUI_b;
     public GameObject bossLifeUI_f;
+    public float attackDistance;
+    public bool isChaseAttack;
 
     EnemyaAttackArea enemyaAttackArea;
+    GameObject player;
     bool isIdle;
     bool isAttack = false;
     bool AttackPosition = false;
@@ -34,13 +37,14 @@ public class EnemyCtrl : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         agent = GetComponent<NavMeshAgent>();
-        moveTarget = bossPoint;
+        moveTarget = firstPoint;
         agent.SetDestination(moveTarget.position);
         //agent.destination = moveTarget.position;
         animator = GetComponent<Animator>();
         state = State.walk;
         nextState = State.walk;
         enemyaAttackArea = GetComponentInChildren<EnemyaAttackArea>();
+        player = GameObject.FindWithTag("Player");
 	}
 	
 	// Update is called once per frame
@@ -62,16 +66,17 @@ public class EnemyCtrl : MonoBehaviour {
 	}
 
     void Walk(){
-        Debug.Log("walk\n");
         Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
         //Vector3 moveTargetPos = new Vector3(moveTarget.position.x, 0, moveTarget.position.z);
         //Debug.Log(Vector3.Distance(moveTarget.position, enemyPos));
         if(Vector3.Distance(moveTarget.position, enemyPos)<=1.0f){
+            Debug.Log("walk1\n");
             moveTarget.position = new Vector3(Random.Range(transform.position.x-10.0f, transform.position.x+10.0f), 0, Random.Range(transform.position.z-10.0f, transform.position.z+10.0f));
             nextState = State.idle;
             animator.SetBool("Idle", true);
         }
         else{
+            Debug.Log("walk2\n");
             agent.SetDestination(new Vector3(moveTarget.position.x, transform.position.y, moveTarget.position.z));
             transform.LookAt(new Vector3(moveTarget.position.x, transform.position.y, moveTarget.position.z));
         }
@@ -83,13 +88,13 @@ public class EnemyCtrl : MonoBehaviour {
 
     void Chase()
     {
-        //Debug.Log("chase");
+        if (!isChaseAttack) { Attack(); return; }
+
         animator.SetBool("Idle", false);
 
         //攻撃が当たってないならplayerを追い続ける
         if (!chaseKey && Vector3.Distance(transform.position, new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z)) > 10.0f)
         {
-            Debug.Log("chase1");
             //突進開始
             enemyaAttackArea.OnAttack();
             //moveTarget.position = new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z);
@@ -97,10 +102,9 @@ public class EnemyCtrl : MonoBehaviour {
             transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
         }
         else if (!chaseKey){
-            Debug.Log("chase2");
             //攻撃が当たったらそのまま走る
             //enemyaAttackArea.OnAttackTermination();
-            moveTarget.position = transform.position + transform.forward * 30 + transform.right * 5;
+            moveTarget.position = transform.position + transform.forward * 30 ;
             agent.SetDestination(moveTarget.position);
             transform.LookAt(moveTarget.position);
             chaseKey = !chaseKey;
@@ -108,16 +112,14 @@ public class EnemyCtrl : MonoBehaviour {
         else{
             Vector3 destination = new Vector3(agent.destination.x, transform.position.y, agent.destination.z);
             if(Vector3.Distance(transform.position, destination)<=1.0f){
-                Debug.Log("chase3");
                 chaseKey = false;
                 enemyaAttackArea.isHit = false;
-                int j = Random.Range(0, 2);
+                int j = Random.Range(0, 3);
                 if(j==0){nextState = State.chase;}
                 else{ nextState = State.attack; }
             }
             else
             {
-                Debug.Log("chase4");
                 agent.SetDestination(moveTarget.position);
                 transform.LookAt(moveTarget.position);
                 if (!enemyaAttackArea.isHit) enemyaAttackArea.OnAttack();
@@ -127,12 +129,12 @@ public class EnemyCtrl : MonoBehaviour {
     }
 
     void Attack(){
-        Debug.Log("Attack");
+        animator.SetBool("Idle", false);
         if(!AttackPosition){    //playerと距離があるなら近づく
             agent.SetDestination(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
             transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
             Vector3 destination = new Vector3(agent.destination.x, transform.position.y, agent.destination.z);
-            if (Vector3.Distance(transform.position, destination) <= 10.0f)   //playerの近くにきたら
+            if (Vector3.Distance(transform.position, destination) <= attackDistance)   //playerの近くにきたら
             {
                 AttackPosition = true;
             }
@@ -148,6 +150,7 @@ public class EnemyCtrl : MonoBehaviour {
             {
                 AttackPosition = false;
                 attackKey = false;
+                enemyaAttackArea.isHit = false;
                 int j = Random.Range(0, 2);
                 if (j == 0) { nextState = State.chase; }
                 else { nextState = State.attack; }
@@ -168,12 +171,10 @@ public class EnemyCtrl : MonoBehaviour {
     //以下、イベント関数
     public void StartIdleAnim()
     {
-        //Debug.Log("startIdleAnim");
         isIdle = true;
     }
 
     public void EndIdleAnim(){
-        //Debug.Log("endIdleAnim");
         isIdle = false;
         animator.SetBool("Idle", false);
         nextState = State.walk;
@@ -208,7 +209,7 @@ public class EnemyCtrl : MonoBehaviour {
         if(other.gameObject.layer==LayerMask.NameToLayer("Player") && !isAttack){
             Debug.Log("Found Player!");
             isAttack = true;
-            nextState = State.chase;
+            nextState = State.attack;
             animator.SetBool("chase", true);
             animator.SetBool("Attacking", true);
 
@@ -228,10 +229,11 @@ public class EnemyCtrl : MonoBehaviour {
             chaseKey = false;
             AttackPosition = false;
             attackKey = false;
+            enemyaAttackArea.isHit = false;
             nextState = State.walk;
             animator.SetBool("chase", false);
             animator.SetBool("Attacking", false);
-            moveTarget = bossPoint;
+            moveTarget.position = new Vector3(firstPoint.transform.position.x, 0, firstPoint.transform.position.z);
 
             if (gameObject.tag == "Boss")
             {

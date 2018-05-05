@@ -19,7 +19,7 @@ public class EnemyaAttackArea : MonoBehaviour {
     private void OnTriggerEnter(Collider other)
     {
         PlayerStatus playerStatus = other.gameObject.transform.root.GetComponent<PlayerStatus>();
-        playerStatus.Damage(enemyStatus.power);
+        playerStatus.Damage(enemyStatus.power, GetComponent<Collider>().transform.position);
         hitEffect.SetActive(true);
         OnAttackTermination();
         isHit=true;
