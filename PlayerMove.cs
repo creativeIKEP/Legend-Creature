@@ -6,7 +6,7 @@ using UnityStandardAssets.CrossPlatformInput;
 public class PlayerMove : MonoBehaviour {
 
     // 重力値.
-    const float GravityPower = 9.8f; 
+    public  float GravityPower = 9.8f; 
     //　目的地についたとみなす停止距離.
     const float StoppingDistance = 0.6f;
     
@@ -138,16 +138,16 @@ public class PlayerMove : MonoBehaviour {
             }
         }
 
+        // 接地していたら思いっきり地面に押し付ける.
+        // (UnityのCharactorControllerの特性のため）
+        Vector3 snapGround = Vector3.zero;
+        if (characterController.isGrounded && !jump)
+            snapGround = Vector3.down;
+
         // 重力.
         velocity += Vector3.down * GravityPower * Time.deltaTime;
         if (characterController.isGrounded || swim)anim.SetBool("jump", false);
         if (jump) { velocity += Vector3.up * jumpPower; jump = false; anim.SetBool("jump", true); }
-
-        // 接地していたら思いっきり地面に押し付ける.
-        // (UnityのCharactorControllerの特性のため）
-        Vector3 snapGround = Vector3.zero;
-        //if (characterController.isGrounded)
-            //snapGround = Vector3.down;
 
         // CharacterControllerを使って動かす.
         characterController.Move(velocity * Time.deltaTime + snapGround);

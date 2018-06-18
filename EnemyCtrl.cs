@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyCtrl : MonoBehaviour {
+    
     NavMeshAgent agent;
     Transform moveTarget;
     Animator animator;
@@ -14,14 +15,20 @@ public class EnemyCtrl : MonoBehaviour {
     public GameObject bossLifeUI_f;
     public float attackDistance;
     public bool isChaseAttack;
+    public float dis = 30;
+    public float runSpeed = 10;
 
     EnemyaAttackArea enemyaAttackArea;
     GameObject player;
+    Vector3 preEnemyPos;
+    float time = 0;
     bool isIdle;
     bool isAttack = false;
     bool AttackPosition = false;
     bool chaseKey = false;
     bool attackKey = false;
+    float stopJudgeDis = 0.01f;
+    bool isMove = true;
 
     enum State{
         idle,
@@ -45,10 +52,12 @@ public class EnemyCtrl : MonoBehaviour {
         nextState = State.walk;
         enemyaAttackArea = GetComponentInChildren<EnemyaAttackArea>();
         player = GameObject.FindWithTag("Player");
+        preEnemyPos = new Vector3(transform.position.x-5.0f, 0, transform.position.z);
 	}
 	
 	// Update is called once per frame
 	void Update () {
+        
         if (state == State.walk) { Walk(); }
         else if (state == State.idle) { Idle(); }
         else if (state == State.chase) { Chase(); }
@@ -63,23 +72,30 @@ public class EnemyCtrl : MonoBehaviour {
             else if (nextState == State.attack) { state = nextState; }
             else { Die(); }
         }
+
+        if (Input.GetKeyDown(KeyCode.P)) { StopEnemy(); }
+        if (Input.GetKeyDown(KeyCode.L)) { RestartEnemy(); }
 	}
 
     void Walk(){
         Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
+        print(Vector3.Distance(enemyPos, preEnemyPos));
         //Vector3 moveTargetPos = new Vector3(moveTarget.position.x, 0, moveTarget.position.z);
         //Debug.Log(Vector3.Distance(moveTarget.position, enemyPos));
-        if(Vector3.Distance(moveTarget.position, enemyPos)<=1.0f){
-            Debug.Log("walk1\n");
+        if(Vector3.Distance(moveTarget.position, enemyPos)<=1.0f || (((Vector3.Distance(enemyPos, preEnemyPos))<stopJudgeDis)&&time>5.0f)){
+            //Debug.Log("walk1\n");
+            time = 0;
             moveTarget.position = new Vector3(Random.Range(transform.position.x-10.0f, transform.position.x+10.0f), 0, Random.Range(transform.position.z-10.0f, transform.position.z+10.0f));
             nextState = State.idle;
             animator.SetBool("Idle", true);
         }
         else{
-            Debug.Log("walk2\n");
+            //Debug.Log("walk2\n");
             agent.SetDestination(new Vector3(moveTarget.position.x, transform.position.y, moveTarget.position.z));
             transform.LookAt(new Vector3(moveTarget.position.x, transform.position.y, moveTarget.position.z));
         }
+        preEnemyPos = new Vector3(transform.position.x, 0, transform.position.z);
+        time += Time.deltaTime;
     }
 
     void Idle(){
@@ -104,7 +120,7 @@ public class EnemyCtrl : MonoBehaviour {
         else if (!chaseKey){
             //攻撃が当たったらそのまま走る
             //enemyaAttackArea.OnAttackTermination();
-            moveTarget.position = transform.position + transform.forward * 30 ;
+            moveTarget.position = transform.position + transform.forward * dis ;
             agent.SetDestination(moveTarget.position);
             transform.LookAt(moveTarget.position);
             chaseKey = !chaseKey;
@@ -142,7 +158,7 @@ public class EnemyCtrl : MonoBehaviour {
         else if(!attackKey){    //攻撃中
             agent.isStopped = true;
             animator.SetBool("attack", true);
-            moveTarget.position = transform.position + transform.forward * 30 + transform.right * 5;
+            moveTarget.position = transform.position + transform.forward * dis + transform.right * 5;
         }
         else{
             Vector3 destination = new Vector3(agent.destination.x, transform.position.y, agent.destination.z);
@@ -181,7 +197,7 @@ public class EnemyCtrl : MonoBehaviour {
     }
 
     public void StartRun(){
-        agent.speed = 7;
+        agent.speed = runSpeed;
     }
     public void EndRun()
     {
@@ -190,24 +206,27 @@ public class EnemyCtrl : MonoBehaviour {
     }
 
     public void StartAttack(){
+        Debug.Log("startAttack");
         enemyaAttackArea.OnAttack();
     }
     public void EndAttack()
     {
+        Debug.Log("EndAttack");
         enemyaAttackArea.OnAttackTermination();
         enemyaAttackArea.hitEffect.SetActive(false);
     }
     public void EndAttack2(){
+        Debug.Log("EndAttack2");
         attackKey = true;
-        agent.SetDestination(transform.position + transform.forward * 30 + transform.right * 5);
-        transform.LookAt(transform.position + transform.forward * 30 + transform.right * 5);
+        agent.SetDestination(transform.position + transform.forward * dis + transform.right * 5);
+        transform.LookAt(transform.position + transform.forward * dis + transform.right * 5);
         animator.SetBool("attack", false);
     }
 
 	private void OnTriggerEnter(Collider other)  //Playerを探す
 	{
         if(other.gameObject.layer==LayerMask.NameToLayer("Player") && !isAttack){
-            Debug.Log("Found Player!");
+            //Debug.Log("Found Player!");
             isAttack = true;
             nextState = State.attack;
             animator.SetBool("chase", true);
@@ -224,7 +243,7 @@ public class EnemyCtrl : MonoBehaviour {
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Player") && isAttack)
         {
-            Debug.Log("Lost Player!");
+            //Debug.Log("Lost Player!");
             isAttack = false;
             chaseKey = false;
             AttackPosition = false;
@@ -241,6 +260,25 @@ public class EnemyCtrl : MonoBehaviour {
                 bossLifeUI_b.SetActive(false);
                 bossLifeUI_f.SetActive(false);
             }
+        }
+    }
+
+    public void StopEnemy(){
+        if (isMove)
+        {
+            animator.StartPlayback();
+            agent.Stop();
+            isMove = false;
+        }
+    }
+
+    public void RestartEnemy()
+    {
+        if (!isMove)
+        {
+            animator.StopPlayback();
+            agent.Resume();
+            isMove = true;
         }
     }
 }

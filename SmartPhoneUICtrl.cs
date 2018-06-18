@@ -125,7 +125,7 @@ public class SmartPhoneUICtrl : MonoBehaviour {
         moved = false;
     }
 
-    //public void JumpButton(){
-    //    playerMove.Jump();
-    //}
+    public void JumpButton(){
+        playerMove.Jump();
+    }
 }

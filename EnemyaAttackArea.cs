@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class EnemyaAttackArea : MonoBehaviour {
     EnemyStatus enemyStatus;
-    public GameObject hitEffect;
+
     public bool isHit = false;
 
+    public GameObject hitEffect;
+
+	
 	// Use this for initialization
 	void Start () {
         enemyStatus = transform.root.GetComponent<EnemyStatus>();
+        hitEffect = GameObject.FindWithTag("Player").transform.Find("GetDamageEffect").gameObject;
 	}
 	
 	// Update is called once per frame

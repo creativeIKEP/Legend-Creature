@@ -46,6 +46,7 @@ public class PlayerStatus : MonoBehaviour {
         HP -= damage;
         uICtrl.HPChange(HP, MaxHP);
         characterController.enabled = false;
+        GetComponent<Rigidbody>().isKinematic = false;
         GetComponent<Rigidbody>().AddForceAtPosition((transform.position - atDamage).normalized * 7, atDamage, ForceMode.VelocityChange);
         if (HP <= 0)
         {
@@ -60,6 +61,7 @@ public class PlayerStatus : MonoBehaviour {
     IEnumerator MoveReStart(){
         yield return new WaitForSeconds(0.5f);
         characterController.enabled = true;
+        GetComponent<Rigidbody>().isKinematic = true;
         yield return new WaitForSeconds(2.0f);
         GetComponent<PlayerMove>().MoveReStart();
     }
